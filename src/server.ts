@@ -1,15 +1,15 @@
-import { prisma } from "./lib/prisma";
+import "dotenv/config";
 import app from "./app";
-
-const PORT = process.env.PORT;
+import { env } from "./config/env";
+import { prisma } from "./lib/prisma";
 
 async function server() {
   try {
     await prisma.$connect();
     console.log("Database connected successfully!");
 
-    app.listen(PORT, () => {
-      console.log(`Pharmatix server is running at port: ${PORT}`);
+    app.listen(env.PORT, () => {
+      console.log(`Pharmatix server is running at PORT: ${env.PORT}`);
     });
   } catch (error) {
     console.log("Error occured", error);
