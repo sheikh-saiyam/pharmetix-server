@@ -1,7 +1,8 @@
 import cors from "cors";
 import express, { Express, Request, Response } from "express";
-import logger from "./middlewares/logger";
-import errorHandler from "./middlewares/error-handler";
+import { errorHandler, logger, notFound } from "./middlewares";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth";
 
 const app: Express = express();
 
@@ -14,6 +15,10 @@ app.use(
     credentials: true,
   }),
 );
+
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.use(notFound);
 
 app.use(errorHandler);
 
