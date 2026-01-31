@@ -7,10 +7,16 @@ const envSchema = z.object({
 
   PORT: z.string().transform(Number),
 
+  APP_ORIGIN: z.string().url(),
+
   DATABASE_URL: z.string().url(),
 
   BETTER_AUTH_SECRET: z.string().min(10),
   BETTER_AUTH_URL: z.string().url(),
+
+  APP_ADMIN: z.string().min(3),
+  APP_ADMIN_EMAIL: z.string().email(),
+  APP_ADMIN_PASS: z.string().min(8),
 });
 
 const parsed = envSchema.safeParse(process.env);

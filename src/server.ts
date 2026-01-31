@@ -9,7 +9,7 @@ async function server() {
     console.log("Database connected successfully!");
 
     app.listen(env.PORT, () => {
-      console.log(`Pharmatix server is running at PORT: ${env.PORT}`);
+      console.log(`Pharmetix server is running at PORT: ${env.PORT}`);
     });
   } catch (error) {
     console.log("Error occured", error);
