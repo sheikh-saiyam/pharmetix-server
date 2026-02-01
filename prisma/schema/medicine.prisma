@@ -1,0 +1,36 @@
+model Category {
+    id          String     @id @default(uuid())
+    slug        String     @unique
+    description String?
+    isActive    Boolean    @default(true)
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    medicines   Medicine[]
+
+    @@map("categories")
+}
+
+model Medicine {
+    id            String      @id @default(uuid())
+    slug          String      @unique
+    brandName     String
+    genericName   String
+    price         Float
+    image         String
+    description   String
+    stockQuantity Int
+    manufacturer  String
+    isActive      Boolean     @default(true)
+    expiryDate    DateTime
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+    // relations
+    categoryId    String
+    category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    sellerId      String
+    seller        User        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+    orderItems    OrderItem[]
+    reviews       Review[]
+
+    @@map("medicines")
+}

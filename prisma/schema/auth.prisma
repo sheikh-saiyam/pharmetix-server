@@ -11,19 +11,23 @@ enum UserStatus {
 }
 
 model User {
-    id            String     @id
+    id            String      @id
     name          String
     email         String
-    emailVerified Boolean    @default(false)
+    emailVerified Boolean     @default(false)
     image         String?
-    createdAt     DateTime   @default(now())
-    updatedAt     DateTime   @updatedAt
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
     // additional fields
-    role          UserRole   @default(CUSTOMER)
-    status        UserStatus @default(ACTIVE)
+    role          UserRole    @default(CUSTOMER)
+    status        UserStatus  @default(ACTIVE)
     // relations
     sessions      Session[]
     accounts      Account[]
+    medicines     Medicine[]
+    orders        Order[]
+    orderItems    OrderItem[]
+    reviews       Review[]
 
     @@unique([email])
     @@map("user")

@@ -1,0 +1,43 @@
+enum OrderStatus {
+    PLACED
+    CANCELLED
+    PROCESSING
+    SHIPPED
+    DELIVERED
+}
+
+model Order {
+    id              String      @id @default(uuid())
+    orderNumber     String      @unique
+    status          OrderStatus @default(PLACED)
+    totalAmount     Float
+    shippingName    String
+    shippingPhone   String
+    shippingAddress String
+    paymentMethod   String      @default("COD")
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    // relations
+    customerId      String
+    customer        User        @relation(fields: [customerId], references: [id])
+    orderItems      OrderItem[]
+    reviews         Review[]
+
+    @@map("orders")
+}
+
+model OrderItem {
+    id         String   @id @default(uuid())
+    quantity   Int
+    unitPrice  Float
+    subTotal   Float
+    // relations
+    orderId    String
+    order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    medicineId String
+    medicine   Medicine @relation(fields: [medicineId], references: [id])
+    sellerId   String
+    seller     User     @relation(fields: [sellerId], references: [id])
+
+    @@map("order_items")
+}
