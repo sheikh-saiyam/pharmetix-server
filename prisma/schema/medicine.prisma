@@ -1,6 +1,9 @@
 model Category {
     id          String     @id @default(uuid())
     slug        String     @unique
+    name        String     @unique
+    image       String?
+    isFeatured  Boolean    @default(false)
     description String?
     isActive    Boolean    @default(true)
     createdAt   DateTime   @default(now())
@@ -26,7 +29,7 @@ model Medicine {
     updatedAt     DateTime    @updatedAt
     // relations
     categoryId    String
-    category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    category      Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
     sellerId      String
     seller        User        @relation(fields: [sellerId], references: [id])
     orderItems    OrderItem[]

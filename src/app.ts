@@ -4,6 +4,8 @@ import express, { Express, Request, Response } from "express";
 import { env } from "./config/env";
 import { auth } from "./lib/auth";
 import { errorHandler, logger, notFound } from "./middlewares";
+import { categoryRouter } from "./modules/category/category.route";
+import { medicineRouter } from "./modules/medicine/medicine.route";
 
 const app: Express = express();
 
@@ -18,6 +20,9 @@ app.use(
 );
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
+
+app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/medicines", medicineRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Pharmetix Server Is Running!");
