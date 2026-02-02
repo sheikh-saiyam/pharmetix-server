@@ -1,9 +1,9 @@
+import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express, { Express, Request, Response } from "express";
-import { errorHandler, logger, notFound } from "./middlewares";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "./lib/auth";
 import { env } from "./config/env";
+import { auth } from "./lib/auth";
+import { errorHandler, logger, notFound } from "./middlewares";
 
 const app: Express = express();
 
