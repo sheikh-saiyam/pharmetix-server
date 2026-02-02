@@ -36,7 +36,7 @@ export const generateUniqueSlug = async ({
   let counter = 1;
 
   while (true) {
-    const exists = await (prisma as any)[model].findUnique({
+    const exists = await (prisma as any)[model].findFirst({
       where: { slug: finalSlug, ...(ignoreId && { NOT: { id: ignoreId } }) },
       select: { id: true },
     });

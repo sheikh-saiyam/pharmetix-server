@@ -53,6 +53,7 @@ const updateCategory = async (id: string, payload: CategoryUpdateInput) => {
   return result;
 };
 
+// TODO: implement delete category service
 export const categoryServices = {
   getCategories,
   createCategory,

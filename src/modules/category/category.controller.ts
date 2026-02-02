@@ -4,7 +4,7 @@ import { categoryServices } from "./category.service";
 
 const getCategories = asyncHandler(async (req: Request, res: Response) => {
   const result = await categoryServices.getCategories();
-  res.json({
+  res.status(200).json({
     success: true,
     message: "Categories retrieved successfully!",
     data: result,
@@ -13,7 +13,7 @@ const getCategories = asyncHandler(async (req: Request, res: Response) => {
 
 const createCategory = asyncHandler(async (req: Request, res: Response) => {
   const result = await categoryServices.createCategory(req.body);
-  res.json({
+  res.status(201).json({
     success: true,
     message: "Category created successfully!",
     data: result,
@@ -25,7 +25,7 @@ const updateCategory = asyncHandler(async (req: Request, res: Response) => {
 
   const result = await categoryServices.updateCategory(id as string, req.body);
 
-  res.json({
+  res.status(200).json({
     success: true,
     message: "Category updated successfully!",
     data: result,

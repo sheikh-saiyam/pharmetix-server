@@ -1,3 +1,13 @@
+enum DosageForm {
+    TABLET
+    CAPSULE
+    SYRUP
+    SUSPENSION
+    DROPS
+    CREAM
+    OINTMENT
+}
+
 model Category {
     id          String     @id @default(uuid())
     slug        String     @unique
@@ -15,18 +25,28 @@ model Category {
 
 model Medicine {
     id            String      @id @default(uuid())
+    // Identity
     slug          String
     brandName     String
     genericName   String
-    price         Float
-    image         String
-    description   String
-    stockQuantity Int
     manufacturer  String
-    isActive      Boolean     @default(true)
+    // Medical info (STRUCTURED)
+    strength      String // "500mg"
+    dosageForm    DosageForm // TABLET | SYRUP | CAPSULE
+    unit          String // "tablet", "ml"
+    packSize      Int // 10 tablets, 100ml
+    dosageInfo    String? // "1 tablet every 8 hours"
+    // Pricing
+    price         Decimal // price per pack
+    piecePrice    Decimal? // price per tablet (optional)  
+    stockQuantity Int
     expiryDate    DateTime
+    isActive      Boolean     @default(true)
     createdAt     DateTime    @default(now())
     updatedAt     DateTime    @updatedAt
+    // Display
+    image         String
+    description   String
     // relations
     categoryId    String
     category      Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
