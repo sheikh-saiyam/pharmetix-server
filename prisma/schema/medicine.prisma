@@ -12,7 +12,7 @@ model Category {
 
 model Medicine {
     id            String      @id @default(uuid())
-    slug          String      @unique
+    slug          String
     brandName     String
     genericName   String
     price         Float
@@ -28,9 +28,10 @@ model Medicine {
     categoryId    String
     category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
     sellerId      String
-    seller        User        @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+    seller        User        @relation(fields: [sellerId], references: [id])
     orderItems    OrderItem[]
     reviews       Review[]
 
+    @@unique([sellerId, slug])
     @@map("medicines")
 }

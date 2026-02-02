@@ -1,6 +1,6 @@
 model Review {
     id         String   @id @default(uuid())
-    rating     Int
+    rating     Float
     comment    String
     createdAt  DateTime @default(now())
     updatedAt  DateTime @updatedAt
@@ -10,7 +10,8 @@ model Review {
     medicineId String
     medicine   Medicine @relation(fields: [medicineId], references: [id], onDelete: Cascade)
     customerId String
-    customer   User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+    customer   User     @relation(fields: [customerId], references: [id])
 
+    @@unique([orderId, medicineId, customerId])
     @@map("reviews")
 }
