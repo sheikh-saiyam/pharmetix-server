@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get("/", medicineControllers.getMedicines);
 
+router.get("/:identifier", medicineControllers.getMedicineById);
+
 router.post(
   "/",
   requireAuth(UserRole.SELLER),

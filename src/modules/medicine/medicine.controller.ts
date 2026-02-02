@@ -48,6 +48,18 @@ const getMedicines = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const getMedicineById = asyncHandler(async (req: Request, res: Response) => {
+  const { identifier } = req.params;
+
+  const result = await medicineServices.getMedicineById(identifier as string);
+
+  res.status(200).json({
+    success: true,
+    message: "Medicine retrieved successfully!",
+    data: result,
+  });
+});
+
 const createMedicine = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.user as IUser;
 
@@ -79,6 +91,7 @@ const updateMedicine = asyncHandler(async (req: Request, res: Response) => {
 
 export const medicineControllers = {
   getMedicines,
+  getMedicineById,
   createMedicine,
   updateMedicine,
 };

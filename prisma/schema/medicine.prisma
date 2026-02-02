@@ -37,8 +37,9 @@ model Medicine {
     packSize      Int // 10 tablets, 100ml
     dosageInfo    String? // "1 tablet every 8 hours"
     // Pricing
-    price         Decimal // price per pack
-    piecePrice    Decimal? // price per tablet (optional)  
+    price         Float // price per pack
+    piecePrice    Float? // price per tablet (optional)
+    // Inventory
     stockQuantity Int
     expiryDate    DateTime
     isActive      Boolean     @default(true)

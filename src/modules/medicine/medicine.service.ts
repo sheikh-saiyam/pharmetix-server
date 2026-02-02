@@ -1,61 +1,14 @@
-import { MedicineWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import { generateUniqueSlug } from "../../utils/generate-slug";
-import { IMedicinePayload, IGetMedicinesQueries } from "./medicine.type";
+import { buildMedicinesWhere } from "./medicine.filter";
+import { IGetMedicinesQueries, IMedicinePayload } from "./medicine.type";
 
 const getMedicines = async (queries: IGetMedicinesQueries) => {
-  const {
-    skip,
-    take,
-    orderBy,
-    search,
-    isActive,
-    manufacturer,
-    categoryId,
-    priceMin,
-    priceMax,
-    dosageForm,
-  } = queries;
-
-  const whereFilters: MedicineWhereInput = {
-    isActive: isActive ?? true,
-    AND: [
-      // search filters
-      {
-        ...(search && {
-          OR: [
-            { brandName: { contains: search, mode: "insensitive" } },
-            { genericName: { contains: search, mode: "insensitive" } },
-            { manufacturer: { contains: search, mode: "insensitive" } },
-            { description: { contains: search, mode: "insensitive" } },
-          ],
-        }),
-      },
-      // attribute filters
-      {
-        ...(manufacturer && { manufacturer }),
-      },
-      {
-        ...(categoryId && { categoryId }),
-      },
-      {
-        ...(dosageForm && { dosageForm }),
-      },
-      // price filters
-      {
-        ...((priceMin !== undefined || priceMax !== undefined) && {
-          price: {
-            ...(priceMin !== undefined ? { gte: priceMin } : {}),
-            ...(priceMax !== undefined ? { lte: priceMax } : {}),
-          },
-        }),
-      },
-    ],
-  };
+  const { skip, take, orderBy } = queries;
 
   const result = await prisma.medicine.findMany({
     // filters
-    where: whereFilters,
+    where: buildMedicinesWhere(queries),
     // pagination
     skip: skip,
     take: take,
@@ -69,10 +22,52 @@ const getMedicines = async (queries: IGetMedicinesQueries) => {
   });
 
   const total = await prisma.medicine.count({
-    where: whereFilters,
+    where: buildMedicinesWhere(queries),
   });
 
   return { data: result, total };
+};
+
+const getMedicineById = async (identifier: string) => {
+  const result = await prisma.medicine.findFirst({
+    where: { OR: [{ id: identifier }, { slug: identifier }] },
+    include: {
+      seller: {
+        select: { name: true, email: true },
+      },
+      category: {
+        select: { id: true, name: true, slug: true },
+      },
+      reviews: {
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          customer: {
+            select: { name: true, image: true },
+          },
+          createdAt: true,
+        },
+      },
+      _count: {
+        select: {
+          reviews: true,
+          orderItems: true,
+        },
+      },
+    },
+    omit: { sellerId: true, categoryId: true },
+  });
+
+  if (!result) {
+    throw new Error("Medicine not found!");
+  }
+
+  if (!result.isActive) {
+    throw new Error("Medicine is not active!");
+  }
+
+  return result;
 };
 
 const createMedicine = async (sellerId: string, payload: IMedicinePayload) => {
@@ -205,6 +200,7 @@ const updateMedicine = async (
 
 export const medicineServices = {
   getMedicines,
+  getMedicineById,
   createMedicine,
   updateMedicine,
 };
