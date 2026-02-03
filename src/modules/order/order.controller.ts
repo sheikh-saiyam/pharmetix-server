@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../../middlewares";
 import { IUser } from "../../types/express";
 import { orderServices } from "./order.service";
-import { success } from "zod";
 
 const createOrder = asyncHandler(async (req: Request, res: Response) => {
   const { id: customerId } = req.user as IUser;

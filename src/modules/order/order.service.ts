@@ -1,3 +1,4 @@
+import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { IOrderPayload } from "./order.type";
 
@@ -11,10 +12,10 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
     orderItems,
   } = payload;
 
-  const getMedicines = async () => {
+  const getMedicines = async (tx: Prisma.TransactionClient) => {
     return Promise.all(
       orderItems.map(async (order) => {
-        const result = await prisma.medicine.findUnique({
+        const result = await tx.medicine.findUnique({
           where: { id: order.medicineId },
           select: { id: true, sellerId: true, price: true },
         });
@@ -43,11 +44,19 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
   };
 
   const result = await prisma.$transaction(async (tx) => {
+    const orderItems = await getMedicines(tx);
+
+    // Calculate total amount
+    const totalAmount = orderItems.reduce(
+      (sum, item) => sum + item.subTotal,
+      0,
+    );
+
     // 1. Create order
     const newOrder = await tx.order.create({
       data: {
         customerId,
-        totalAmount: 1,
+        totalAmount,
         shippingName,
         shippingPhone,
         shippingAddress,
@@ -58,7 +67,6 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
     });
 
     // Prepare order items
-    const orderItems = await getMedicines();
     const orderItemsWithOrderId = orderItems.map((order) => {
       return { ...order, orderId: newOrder.id };
     });
