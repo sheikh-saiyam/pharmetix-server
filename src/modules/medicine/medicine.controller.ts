@@ -48,6 +48,54 @@ const getMedicines = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const getSellerMedicines = asyncHandler(async (req: Request, res: Response) => {
+  const {
+    search,
+    isActive,
+    manufacturer,
+    categoryId,
+    priceMin,
+    priceMax,
+    dosageForm,
+  } = req.query;
+
+  const { id: sellerId } = req.user as IUser;
+
+  const { skip, take, orderBy } = buildPaginationAndSort(req.query);
+
+  const result = await medicineServices.getSellerMedicines(
+    {
+      skip,
+      take,
+      orderBy,
+      search: search as string | undefined,
+      manufacturer: manufacturer as string | undefined,
+      categoryId: categoryId as string | undefined,
+      priceMin: priceMin ? Number(priceMin) : undefined,
+      priceMax: priceMax ? Number(priceMax) : undefined,
+      dosageForm: dosageForm as DosageForm | undefined,
+      isActive:
+        isActive === "false"
+          ? false
+          : isActive === "true" || (isActive === undefined && true),
+    },
+    sellerId,
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Seller Medicines retrieved successfully!",
+    meta: {
+      total: result.total,
+      page: Math.ceil(skip / take) + 1,
+      totalPages: Math.ceil(result.total / take),
+      limit: take,
+      skip: skip,
+    },
+    data: result.data,
+  });
+});
+
 const getMedicineById = asyncHandler(async (req: Request, res: Response) => {
   const { identifier } = req.params;
 
@@ -91,6 +139,7 @@ const updateMedicine = asyncHandler(async (req: Request, res: Response) => {
 
 export const medicineControllers = {
   getMedicines,
+  getSellerMedicines,
   getMedicineById,
   createMedicine,
   updateMedicine,

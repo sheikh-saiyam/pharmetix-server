@@ -28,6 +28,34 @@ const getMedicines = async (queries: IGetMedicinesQueries) => {
   return { data: result, total };
 };
 
+const getSellerMedicines = async (
+  queries: IGetMedicinesQueries,
+  sellerId: string,
+) => {
+  const { skip, take, orderBy } = queries;
+
+  const result = await prisma.medicine.findMany({
+    // filters
+    where: { sellerId, ...buildMedicinesWhere(queries) },
+    // pagination
+    skip: skip,
+    take: take,
+    // sorting
+    ...(orderBy && { orderBy }),
+    // includes & omissions
+    include: {
+      category: { select: { id: true, name: true, slug: true } },
+    },
+    omit: { sellerId: true, categoryId: true },
+  });
+
+  const total = await prisma.medicine.count({
+    where: { sellerId, ...buildMedicinesWhere(queries) },
+  });
+
+  return { data: result, total };
+};
+
 const getMedicineById = async (identifier: string) => {
   const result = await prisma.medicine.findFirst({
     where: { OR: [{ id: identifier }, { slug: identifier }] },
@@ -200,6 +228,7 @@ const updateMedicine = async (
 
 export const medicineServices = {
   getMedicines,
+  getSellerMedicines,
   getMedicineById,
   createMedicine,
   updateMedicine,
