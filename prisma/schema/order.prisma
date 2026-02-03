@@ -7,21 +7,23 @@ enum OrderStatus {
 }
 
 model Order {
-    id              String      @id @default(uuid())
-    orderNumber     String      @unique
-    status          OrderStatus @default(PLACED)
-    totalAmount     Float
-    shippingName    String
-    shippingPhone   String
-    shippingAddress String
-    paymentMethod   String      @default("COD")
-    createdAt       DateTime    @default(now())
-    updatedAt       DateTime    @updatedAt
+    id                 String      @id @default(uuid())
+    orderNumber        String      @unique @default(cuid())
+    status             OrderStatus @default(PLACED)
+    totalAmount        Float
+    shippingName       String
+    shippingPhone      String
+    shippingAddress    String
+    shippingCity       String
+    shippingPostalCode String
+    paymentMethod      String      @default("COD")
+    createdAt          DateTime    @default(now())
+    updatedAt          DateTime    @updatedAt
     // relations
-    customerId      String
-    customer        User        @relation(fields: [customerId], references: [id])
-    orderItems      OrderItem[]
-    reviews         Review[]
+    customerId         String
+    customer           User        @relation(fields: [customerId], references: [id])
+    orderItems         OrderItem[]
+    reviews            Review[]
 
     @@map("orders")
 }
