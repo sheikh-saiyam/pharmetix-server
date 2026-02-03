@@ -6,6 +6,9 @@ const updateMedicineStock = async (
   stockOperation: IStockOperation,
   stockQuantity: number,
 ) => {
+  if (stockQuantity <= 0) {
+    throw new Error("Stock quantity must be a positive number");
+  }
   const result = await prisma.medicine.update({
     where: { id: medicineId },
     data: {

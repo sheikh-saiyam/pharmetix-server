@@ -127,6 +127,7 @@ const updateMedicine = asyncHandler(async (req: Request, res: Response) => {
   const { stockOperation, stockQuantity, skipUpdateQuery } = req.query;
 
   if (
+    stockOperation !== undefined &&
     stockOperation !== IStockOperation.INC &&
     stockOperation !== IStockOperation.DEC
   ) {
