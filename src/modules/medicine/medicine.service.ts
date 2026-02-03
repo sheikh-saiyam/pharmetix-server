@@ -1,7 +1,12 @@
 import { prisma } from "../../lib/prisma";
 import { generateUniqueSlug } from "../../utils/generate-slug";
 import { buildMedicinesWhere } from "./medicine.filter";
-import { IGetMedicinesQueries, IMedicinePayload } from "./medicine.type";
+import { medicineStockServices } from "./medicine.stock.service";
+import {
+  IGetMedicinesQueries,
+  IMedicinePayload,
+  IStockOperation,
+} from "./medicine.type";
 
 const getMedicines = async (queries: IGetMedicinesQueries) => {
   const { skip, take, orderBy } = queries;
@@ -147,6 +152,9 @@ const updateMedicine = async (
   id: string,
   sellerId: string,
   payload: Partial<IMedicinePayload>,
+  stockOperation: IStockOperation | undefined,
+  stockQuantity: number,
+  skipUpdateMedicineQuery: boolean,
 ) => {
   const medicine = await prisma.medicine.findUnique({
     where: { id },
@@ -163,8 +171,23 @@ const updateMedicine = async (
     throw new Error("Medicine not found!");
   }
 
+  // Ensure the medicine belongs to the seller
   if (medicine.sellerId !== sellerId) {
     throw new Error("Unauthorized: You can only update your own medicines!");
+  }
+
+  // Apply stock change
+  if (stockOperation !== undefined) {
+    await medicineStockServices.updateMedicineStock(
+      id,
+      stockOperation,
+      stockQuantity,
+    );
+
+    // if update, exit early new data
+    if (skipUpdateMedicineQuery) {
+      return getMedicineById(id);
+    }
   }
 
   // Check if category exists and is active

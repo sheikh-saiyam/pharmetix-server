@@ -1,5 +1,10 @@
 import { DosageForm } from "../../../generated/prisma/enums";
 
+export enum IStockOperation {
+  INC = "INC",
+  DEC = "DEC",
+}
+
 export interface IMedicinePayload {
   // identity
   slug?: string;

@@ -4,6 +4,7 @@ import { IUser } from "../../types/express";
 import { medicineServices } from "./medicine.service";
 import { buildPaginationAndSort } from "../../utils/pagination-sort";
 import { DosageForm } from "../../../generated/prisma/enums";
+import { IStockOperation } from "./medicine.type";
 
 const getMedicines = asyncHandler(async (req: Request, res: Response) => {
   const {
@@ -123,11 +124,33 @@ const createMedicine = asyncHandler(async (req: Request, res: Response) => {
 const updateMedicine = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { id: sellerId } = req.user as IUser;
+  const { stockOperation, stockQuantity, skipUpdateQuery } = req.query;
+
+  if (
+    stockOperation !== IStockOperation.INC &&
+    stockOperation !== IStockOperation.DEC
+  ) {
+    throw new Error("Invalid stock operation");
+  }
+
+  let stockQuantityNumber = 1;
+  if (stockQuantity !== undefined) {
+    stockQuantityNumber = Number(stockQuantity);
+
+    if (Number.isNaN(stockQuantityNumber)) {
+      throw new Error("Invalid stock quantity");
+    }
+  }
+
+  const skipUpdateMedicineQuery = skipUpdateQuery === "true" ? true : false;
 
   const result = await medicineServices.updateMedicine(
     id as string,
     sellerId,
     req.body,
+    stockOperation ? stockOperation : undefined,
+    stockQuantityNumber,
+    skipUpdateMedicineQuery,
   );
 
   res.status(200).json({
