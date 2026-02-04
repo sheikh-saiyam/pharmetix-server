@@ -1,15 +1,16 @@
-import { Prisma } from "../../../generated/prisma/client";
+import { OrderStatus, Prisma } from "../../../generated/prisma/client";
 import { OrderWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import { medicineStockServices } from "../medicine/medicine.stock.service";
 import { IStockOperation } from "../medicine/medicine.type";
+import { orderStatusServices } from "./order.status.service";
 import {
-  IGetALlOrdersQueries,
+  IGetAllOrdersQueries,
   IGetCustomerOrdersQueries,
   IOrderPayload,
 } from "./order.type";
 
-const getOrders = async (payload: IGetALlOrdersQueries) => {
+const getOrders = async (payload: IGetAllOrdersQueries) => {
   const { skip, take, orderBy, status } = payload;
 
   const whereFilters = {
@@ -51,7 +52,9 @@ const getOrders = async (payload: IGetALlOrdersQueries) => {
   return { data: result, total };
 };
 
-const getSellerOrders = async (customerId: string) => {};
+const getSellerOrders = async (sellerId: string) => {
+  throw new Error("Not implemented");
+};
 
 const getCustomerOrders = async (
   customerId: string,
@@ -213,9 +216,69 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
   return result;
 };
 
+const cancelOrder = async (customerId: string, orderId: string) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderItems: {
+          select: {
+            id: true,
+            medicineId: true,
+            quantity: true,
+            unitPrice: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new Error(`Order with ID ${orderId} not found!`);
+    }
+
+    if (order.customerId !== customerId) {
+      throw new Error("You are not authorized to cancel this order!");
+    }
+
+    if (order.status === OrderStatus.CANCELLED) {
+      throw new Error("Order is already CANCELLED!");
+    }
+
+    // 1. Change order status to "CANCELLED"
+    await orderStatusServices.updateOrderStatus(
+      orderId,
+      OrderStatus.CANCELLED,
+      tx,
+    );
+
+    // 2. Increase medicine stock back
+    await Promise.all(
+      order.orderItems.map((item) =>
+        medicineStockServices.updateMedicineStock(
+          item.medicineId,
+          IStockOperation.INC,
+          item.quantity,
+          tx,
+        ),
+      ),
+    );
+
+    // 3. Get updated order
+    const updatedOrder = await tx.order.findUnique({
+      where: { id: orderId },
+      omit: { customerId: true },
+    });
+
+    return updatedOrder;
+  });
+
+  return result;
+};
+
 export const orderServices = {
   getOrders,
   getSellerOrders,
   getCustomerOrders,
   createOrder,
+  cancelOrder,
 };

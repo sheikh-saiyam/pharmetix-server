@@ -21,4 +21,10 @@ router.get(
 
 router.post("/", requireAuth(UserRole.CUSTOMER), orderControllers.createOrder);
 
+router.patch(
+  "/cancel-order/:orderId",
+  requireAuth(UserRole.CUSTOMER),
+  orderControllers.cancelOrder,
+);
+
 export const orderRouter = router;

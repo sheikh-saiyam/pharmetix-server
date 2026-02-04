@@ -1,5 +1,3 @@
-import { int } from "zod";
-
 export interface IOrderItemPayload {
   medicineId: string;
   quantity: number;
@@ -15,7 +13,7 @@ export interface IOrderPayload {
   orderItems: IOrderItemPayload[];
 }
 
-export interface IGetALlOrdersQueries {
+export interface IGetAllOrdersQueries {
   skip: number;
   take: number;
   orderBy: { [key: string]: "asc" | "desc" } | undefined;

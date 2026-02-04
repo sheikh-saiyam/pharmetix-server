@@ -30,7 +30,12 @@ const getOrders = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {});
+const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {
+  res.status(501).json({
+    success: false,
+    message: "Not implemented",
+  });
+});
 
 const getCustomerOrders = asyncHandler(async (req: Request, res: Response) => {
   const { id: customerId } = req.user as IUser;
@@ -69,9 +74,23 @@ const createOrder = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
+  const { id: customerId } = req.user as IUser;
+  const { orderId } = req.params;
+
+  const result = await orderServices.cancelOrder(customerId, orderId as string);
+
+  res.status(200).json({
+    success: true,
+    message: "Order cancelled successfully!",
+    data: result,
+  });
+});
+
 export const orderControllers = {
   getOrders,
   getSellerOrders,
   getCustomerOrders,
   createOrder,
+  cancelOrder,
 };
