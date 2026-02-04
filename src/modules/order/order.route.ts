@@ -5,6 +5,20 @@ import { orderControllers } from "./order.controller";
 
 const router = express.Router();
 
+router.get("/all", requireAuth(UserRole.ADMIN), orderControllers.getOrders);
+
+router.get(
+  "/seller",
+  requireAuth(UserRole.SELLER),
+  orderControllers.getSellerOrders,
+);
+
+router.get(
+  "/customer",
+  requireAuth(UserRole.CUSTOMER),
+  orderControllers.getCustomerOrders,
+);
+
 router.post("/", requireAuth(UserRole.CUSTOMER), orderControllers.createOrder);
 
 export const orderRouter = router;

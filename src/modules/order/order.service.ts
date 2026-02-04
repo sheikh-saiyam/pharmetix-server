@@ -1,8 +1,98 @@
 import { Prisma } from "../../../generated/prisma/client";
+import { OrderWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import { medicineStockServices } from "../medicine/medicine.stock.service";
 import { IStockOperation } from "../medicine/medicine.type";
-import { IOrderPayload } from "./order.type";
+import {
+  IGetALlOrdersQueries,
+  IGetCustomerOrdersQueries,
+  IOrderPayload,
+} from "./order.type";
+
+const getOrders = async (payload: IGetALlOrdersQueries) => {
+  const { skip, take, orderBy, status } = payload;
+
+  const whereFilters = {
+    ...(status && { status }),
+  } as OrderWhereInput;
+
+  const result = await prisma.order.findMany({
+    where: whereFilters,
+    include: {
+      orderItems: {
+        select: {
+          id: true,
+          quantity: true,
+          unitPrice: true,
+          subTotal: true,
+          medicine: {
+            select: {
+              id: true,
+              genericName: true,
+              brandName: true,
+              price: true,
+            },
+          },
+        },
+      },
+    },
+    omit: {
+      customerId: true,
+    },
+    // pagination
+    skip: skip,
+    take: take,
+    // sorting
+    ...(orderBy && { orderBy }),
+  });
+
+  const total = await prisma.order.count({ where: whereFilters });
+
+  return { data: result, total };
+};
+
+const getSellerOrders = async (customerId: string) => {};
+
+const getCustomerOrders = async (
+  customerId: string,
+  queries: IGetCustomerOrdersQueries,
+) => {
+  const { skip, take, orderBy } = queries;
+
+  const result = await prisma.order.findMany({
+    where: { customerId },
+    include: {
+      orderItems: {
+        select: {
+          id: true,
+          quantity: true,
+          unitPrice: true,
+          subTotal: true,
+          medicine: {
+            select: {
+              id: true,
+              genericName: true,
+              brandName: true,
+              price: true,
+            },
+          },
+        },
+      },
+    },
+    omit: {
+      customerId: true,
+    },
+    // pagination
+    skip: skip,
+    take: take,
+    // sorting
+    ...(orderBy && { orderBy }),
+  });
+
+  const total = await prisma.order.count({ where: { customerId } });
+
+  return { data: result, total };
+};
 
 const createOrder = async (customerId: string, payload: IOrderPayload) => {
   const {
@@ -123,4 +213,9 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
   return result;
 };
 
-export const orderServices = { createOrder };
+export const orderServices = {
+  getOrders,
+  getSellerOrders,
+  getCustomerOrders,
+  createOrder,
+};
