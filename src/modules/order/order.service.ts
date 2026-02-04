@@ -1,5 +1,7 @@
 import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+import { medicineStockServices } from "../medicine/medicine.stock.service";
+import { IStockOperation } from "../medicine/medicine.type";
 import { IOrderPayload } from "./order.type";
 
 const createOrder = async (customerId: string, payload: IOrderPayload) => {
@@ -17,7 +19,12 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
       orderItems.map(async (order) => {
         const result = await tx.medicine.findUnique({
           where: { id: order.medicineId },
-          select: { id: true, sellerId: true, price: true },
+          select: {
+            id: true,
+            sellerId: true,
+            price: true,
+            stockQuantity: true,
+          },
         });
 
         if (!result) {
@@ -27,6 +34,12 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
         if (isNaN(order.quantity)) {
           throw new Error(
             `Invalid quantity for medicine ID ${order.medicineId}`,
+          );
+        }
+
+        if (order.quantity > result.stockQuantity) {
+          throw new Error(
+            `Insufficient stock for medicine ID ${order.medicineId}`,
           );
         }
 
@@ -76,7 +89,19 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
       data: orderItemsWithOrderId,
     });
 
-    // 3. Get order data
+    // 3. Decrease medicine stock
+    await Promise.all(
+      orderItemsWithOrderId.map((order) =>
+        medicineStockServices.updateMedicineStock(
+          order.medicineId,
+          IStockOperation.DEC,
+          order.quantity,
+          tx,
+        ),
+      ),
+    );
+
+    // 4. Get order data
     const orderData = await tx.order.findUnique({
       where: { id: newOrder.id },
       include: {
