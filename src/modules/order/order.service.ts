@@ -1,4 +1,8 @@
-import { OrderStatus, Prisma } from "../../../generated/prisma/client";
+import {
+  OrderStatus,
+  Prisma,
+  UserRole,
+} from "../../../generated/prisma/client";
 import { OrderWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import { medicineStockServices } from "../medicine/medicine.stock.service";
@@ -50,6 +54,56 @@ const getOrders = async (payload: IGetAllOrdersQueries) => {
   const total = await prisma.order.count({ where: whereFilters });
 
   return { data: result, total };
+};
+
+const getOrderById = async (
+  orderId: string,
+  customerId: string,
+  customerRole: UserRole,
+) => {
+  const result = await prisma.order.findUnique({
+    where: {
+      id: orderId,
+      ...(customerRole === UserRole.CUSTOMER && { customerId }),
+    },
+    include: {
+      orderItems: {
+        select: {
+          id: true,
+          quantity: true,
+          unitPrice: true,
+          subTotal: true,
+          ...(customerRole === UserRole.ADMIN && {
+            seller: {
+              select: { id: true, name: true, email: true, image: true },
+            },
+          }),
+          medicine: {
+            select: {
+              id: true,
+              sellerId: true,
+              genericName: true,
+              brandName: true,
+              price: true,
+            },
+          },
+        },
+      },
+      ...(customerRole === UserRole.SELLER || customerRole === UserRole.ADMIN
+        ? {
+            customer: {
+              select: { id: true, name: true, email: true, image: true },
+            },
+          }
+        : {}),
+    },
+    omit: {
+      ...((customerRole === UserRole.CUSTOMER ||
+        customerRole === UserRole.ADMIN) && { customerId: true }),
+    },
+  });
+
+  return result;
 };
 
 const getSellerOrders = async (sellerId: string) => {
@@ -216,7 +270,7 @@ const createOrder = async (customerId: string, payload: IOrderPayload) => {
   return result;
 };
 
-const cancelOrder = async (customerId: string, orderId: string) => {
+const cancelCustomerOrder = async (customerId: string, orderId: string) => {
   const result = await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
@@ -277,8 +331,9 @@ const cancelOrder = async (customerId: string, orderId: string) => {
 
 export const orderServices = {
   getOrders,
+  getOrderById,
   getSellerOrders,
   getCustomerOrders,
   createOrder,
-  cancelOrder,
+  cancelCustomerOrder,
 };

@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get("/all", requireAuth(UserRole.ADMIN), orderControllers.getOrders);
 
+router.get("/:orderId", requireAuth(), orderControllers.getOrderById);
+
 router.get(
   "/seller",
   requireAuth(UserRole.SELLER),
@@ -24,7 +26,7 @@ router.post("/", requireAuth(UserRole.CUSTOMER), orderControllers.createOrder);
 router.patch(
   "/cancel-order/:orderId",
   requireAuth(UserRole.CUSTOMER),
-  orderControllers.cancelOrder,
+  orderControllers.cancelCustomerOrder,
 );
 
 export const orderRouter = router;

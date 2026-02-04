@@ -30,6 +30,23 @@ const getOrders = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const getOrderById = asyncHandler(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { id: customerId, role: customerRole } = req.user as IUser;
+
+  const result = await orderServices.getOrderById(
+    orderId as string,
+    customerId,
+    customerRole,
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Order fetched successfully!",
+    data: result,
+  });
+});
+
 const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {
   res.status(501).json({
     success: false,
@@ -74,23 +91,29 @@ const createOrder = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
-  const { id: customerId } = req.user as IUser;
-  const { orderId } = req.params;
+const cancelCustomerOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id: customerId } = req.user as IUser;
+    const { orderId } = req.params;
 
-  const result = await orderServices.cancelOrder(customerId, orderId as string);
+    const result = await orderServices.cancelCustomerOrder(
+      customerId,
+      orderId as string,
+    );
 
-  res.status(200).json({
-    success: true,
-    message: "Order cancelled successfully!",
-    data: result,
-  });
-});
+    res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully!",
+      data: result,
+    });
+  },
+);
 
 export const orderControllers = {
   getOrders,
+  getOrderById,
   getSellerOrders,
   getCustomerOrders,
   createOrder,
-  cancelOrder,
+  cancelCustomerOrder,
 };
