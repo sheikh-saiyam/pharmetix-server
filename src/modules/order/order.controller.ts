@@ -47,6 +47,7 @@ const getOrderById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// TODO: implement this
 const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {
   res.status(501).json({
     success: false,
@@ -114,7 +115,7 @@ const changeOrderStatus = asyncHandler(async (req: Request, res: Response) => {
 const changeOrderItemStatus = asyncHandler(
   async (req: Request, res: Response) => {
     const { orderItemId } = req.params;
-    const { id: sellerId } = req.user as IUser;
+    const { id: sellerId, role } = req.user as IUser;
 
     const { status } = req.body || {};
 
@@ -123,6 +124,7 @@ const changeOrderItemStatus = asyncHandler(
     }
     const result = await orderServices.changeOrderItemStatus(
       sellerId,
+      role,
       orderItemId as string,
       status,
     );

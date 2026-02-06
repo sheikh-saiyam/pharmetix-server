@@ -41,7 +41,7 @@ router.patch(
 
 router.patch(
   "/item/change-status/:orderItemId",
-  requireAuth(UserRole.SELLER),
+  requireAuth(UserRole.SELLER, UserRole.ADMIN),
   orderControllers.changeOrderItemStatus,
 );
 

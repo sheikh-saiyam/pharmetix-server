@@ -314,6 +314,7 @@ const changeOrderStatus = async (
 
 const changeOrderItemStatus = async (
   sellerId: string,
+  role: UserRole,
   orderItemId: string,
   updatedStatus: OrderItemStatus,
 ) => {
@@ -327,7 +328,7 @@ const changeOrderItemStatus = async (
       throw new Error(`Order item with ID ${orderItemId} not found!`);
     }
 
-    if (orderItem.sellerId !== sellerId) {
+    if (role === UserRole.SELLER && orderItem.sellerId !== sellerId) {
       throw new Error("You are not authorized to update this order item!");
     }
 
@@ -369,6 +370,16 @@ const cancelCustomerOrder = async (customerId: string, orderId: string) => {
 
     if (order.customerId !== customerId) {
       throw new Error("You are not authorized to cancel this order!");
+    }
+
+    if (
+      order.status === OrderStatus.PROCESSING ||
+      order.status === OrderStatus.SHIPPED ||
+      order.status === OrderStatus.DELIVERED
+    ) {
+      throw new Error(
+        `Order cannot be cancelled because it is already ${order.status}!`,
+      );
     }
 
     if (order.status === OrderStatus.CANCELLED) {
