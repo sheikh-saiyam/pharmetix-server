@@ -4,7 +4,10 @@ import {
   Prisma,
   UserRole,
 } from "../../../generated/prisma/client";
-import { OrderWhereInput } from "../../../generated/prisma/models";
+import {
+  OrderItemWhereInput,
+  OrderWhereInput,
+} from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import { medicineStockServices } from "../medicine/medicine.stock.service";
 import { IStockOperation } from "../medicine/medicine.type";
@@ -12,6 +15,7 @@ import { orderStatusServices } from "./order.status.service";
 import {
   IGetAllOrdersQueries,
   IGetCustomerOrdersQueries,
+  IGetSellerOrdersQueries,
   IOrderPayload,
 } from "./order.type";
 
@@ -159,6 +163,57 @@ const getCustomerOrders = async (
   });
 
   const total = await prisma.order.count({ where: { customerId } });
+
+  return { data: result, total };
+};
+
+const getSellerOrders = async (
+  sellerId: string,
+  payload: IGetSellerOrdersQueries,
+) => {
+  const { skip, take, orderBy, status } = payload;
+
+  const whereFilters = {
+    sellerId,
+    ...(status && { status }),
+  } as OrderItemWhereInput;
+
+  const result = await prisma.orderItem.findMany({
+    where: whereFilters,
+    include: {
+      medicine: {
+        select: {
+          id: true,
+          slug: true,
+          genericName: true,
+          brandName: true,
+          price: true,
+        },
+      },
+      order: {
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          shippingName: true,
+          shippingAddress: true,
+          shippingCity: true,
+          shippingPostalCode: true,
+        },
+      },
+    },
+    // pagination
+    skip: skip,
+    take: take,
+    // sorting
+    ...(orderBy && { orderBy }),
+  });
+
+  if (sellerId !== result[0]?.sellerId) {
+    throw new Error("You are not authorized to view this seller's orders!");
+  }
+
+  const total = await prisma.orderItem.count({ where: whereFilters });
 
   return { data: result, total };
 };
@@ -421,6 +476,7 @@ export const orderServices = {
   getOrders,
   getOrderById,
   getCustomerOrders,
+  getSellerOrders,
   createOrder,
   changeOrderStatus,
   changeOrderItemStatus,

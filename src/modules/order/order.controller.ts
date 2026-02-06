@@ -3,6 +3,7 @@ import { asyncHandler } from "../../middlewares";
 import { IUser } from "../../types/express";
 import { orderServices } from "./order.service";
 import { buildPaginationAndSort } from "../../utils/pagination-sort";
+import { OrderItemStatus, OrderStatus } from "../../../generated/prisma/enums";
 
 const getOrders = asyncHandler(async (req: Request, res: Response) => {
   const { status } = req.query;
@@ -13,7 +14,7 @@ const getOrders = asyncHandler(async (req: Request, res: Response) => {
     skip,
     take,
     orderBy,
-    status: status as string | undefined,
+    status: status as OrderStatus | undefined,
   });
 
   res.status(200).json({
@@ -47,11 +48,31 @@ const getOrderById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// TODO: implement this
 const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {
-  res.status(501).json({
-    success: false,
-    message: "Not implemented",
+  const { id: sellerId } = req.user as IUser;
+
+  const { status } = req.query;
+
+  const { skip, take, orderBy } = buildPaginationAndSort(req.query);
+
+  const result = await orderServices.getSellerOrders(sellerId, {
+    skip,
+    take,
+    orderBy,
+    status: status as OrderItemStatus | undefined,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Orders fetched successfully!",
+    meta: {
+      total: result.total,
+      page: Math.ceil(skip / take) + 1,
+      totalPages: Math.ceil(result.total / take),
+      limit: take,
+      skip: skip,
+    },
+    data: result.data,
   });
 });
 

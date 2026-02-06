@@ -1,3 +1,5 @@
+import { OrderItemStatus, OrderStatus } from "../../../generated/prisma/enums";
+
 export interface IOrderItemPayload {
   medicineId: string;
   quantity: number;
@@ -17,7 +19,13 @@ export interface IGetAllOrdersQueries {
   skip: number;
   take: number;
   orderBy: { [key: string]: "asc" | "desc" } | undefined;
-  status: string | undefined;
+  status: OrderStatus | undefined;
+}
+export interface IGetSellerOrdersQueries {
+  skip: number;
+  take: number;
+  orderBy: { [key: string]: "asc" | "desc" } | undefined;
+  status: OrderItemStatus | undefined;
 }
 
 export interface IGetCustomerOrdersQueries {

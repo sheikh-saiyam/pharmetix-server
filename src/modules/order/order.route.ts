@@ -11,8 +11,6 @@ router.get(
   orderControllers.getOrders,
 );
 
-router.get("/:orderId", requireAuth(), orderControllers.getOrderById);
-
 router.get(
   "/seller",
   requireAuth(UserRole.SELLER),
@@ -24,6 +22,8 @@ router.get(
   requireAuth(UserRole.CUSTOMER),
   orderControllers.getCustomerOrders,
 );
+
+router.get("/:orderId", requireAuth(), orderControllers.getOrderById);
 
 router.post("/", requireAuth(UserRole.CUSTOMER), orderControllers.createOrder);
 
