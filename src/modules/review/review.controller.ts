@@ -24,7 +24,8 @@ const getAllReviews = asyncHandler(async (req: Request, res: Response) => {
 
   const { skip, take, orderBy } = buildPaginationAndSort(req.query);
 
-  const numericRating = Number(rating) || undefined;
+  const parsedRating = Number(rating);
+  const numericRating = Number.isNaN(parsedRating) ? undefined : parsedRating;
 
   const result = await reviewServices.getAllReviews({
     skip: skip,
