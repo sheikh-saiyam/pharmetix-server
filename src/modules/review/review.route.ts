@@ -7,6 +7,12 @@ const router = express.Router();
 
 router.get("/", reviewControllers.getReviews);
 
+router.get(
+  "/all",
+  requireAuth(UserRole.ADMIN),
+  reviewControllers.getAllReviews,
+);
+
 router.post(
   "/",
   requireAuth(UserRole.CUSTOMER),

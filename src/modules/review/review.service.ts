@@ -1,6 +1,7 @@
 import { OrderStatus } from "../../../generated/prisma/enums";
+import { ReviewWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
-import { IReviewPayload } from "./review.type";
+import { IGetReviewsQueries, IReviewPayload } from "./review.type";
 
 const getReviews = async (limit: number = 6) => {
   const result = await prisma.review.findMany({
@@ -30,6 +31,62 @@ const getReviews = async (limit: number = 6) => {
   });
 
   return result;
+};
+
+const getAllReviews = async (payload: IGetReviewsQueries) => {
+  const { skip, take, orderBy } = payload;
+
+  const whereFilters: ReviewWhereInput = {
+    ...(payload.rating !== undefined && { rating: payload.rating }),
+  };
+
+  const result = await prisma.review.findMany({
+    // filters
+    where: whereFilters,
+    // pagination
+    skip: skip,
+    take: take,
+    // sorting
+    ...(orderBy && { orderBy }),
+    include: {
+      order: {
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+      medicine: {
+        select: {
+          id: true,
+          slug: true,
+          genericName: true,
+          brandName: true,
+        },
+      },
+      customer: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+        },
+      },
+    },
+    omit: {
+      medicineId: true,
+      customerId: true,
+      orderId: true,
+      updatedAt: true,
+    },
+  });
+
+  const total = await prisma.review.count({
+    where: whereFilters,
+  });
+
+  return { data: result, total };
 };
 
 const createReview = async (customerId: string, payload: IReviewPayload) => {
@@ -100,4 +157,4 @@ const createReview = async (customerId: string, payload: IReviewPayload) => {
   return result;
 };
 
-export const reviewServices = { getReviews, createReview };
+export const reviewServices = { getReviews, getAllReviews, createReview };
