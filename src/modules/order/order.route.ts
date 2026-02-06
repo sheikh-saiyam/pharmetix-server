@@ -14,6 +14,12 @@ router.get(
 router.get("/:orderId", requireAuth(), orderControllers.getOrderById);
 
 router.get(
+  "/seller",
+  requireAuth(UserRole.SELLER),
+  orderControllers.getSellerOrders,
+);
+
+router.get(
   "/customer",
   requireAuth(UserRole.CUSTOMER),
   orderControllers.getCustomerOrders,
@@ -25,6 +31,18 @@ router.patch(
   "/cancel-order/:orderId",
   requireAuth(UserRole.CUSTOMER),
   orderControllers.cancelCustomerOrder,
+);
+
+router.patch(
+  "/change-status/:orderId",
+  requireAuth(UserRole.ADMIN),
+  orderControllers.changeOrderStatus,
+);
+
+router.patch(
+  "/item/change-status/:orderItemId",
+  requireAuth(UserRole.SELLER),
+  orderControllers.changeOrderItemStatus,
 );
 
 export const orderRouter = router;

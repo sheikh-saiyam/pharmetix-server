@@ -1,5 +1,5 @@
 import { Prisma } from "../../../generated/prisma/client";
-import { OrderStatus } from "../../../generated/prisma/enums";
+import { OrderItemStatus, OrderStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 
 const updateOrderStatus = async (
@@ -16,6 +16,21 @@ const updateOrderStatus = async (
   return result;
 };
 
+const updateOrderItemStatus = async (
+  orderId: string,
+  updatedStatus: OrderItemStatus,
+  tx?: Prisma.TransactionClient,
+) => {
+  const result = await (tx ?? prisma).orderItem.update({
+    where: { id: orderId },
+    data: { status: updatedStatus },
+    select: { id: true, status: true },
+  });
+
+  return result;
+};
+
 export const orderStatusServices = {
   updateOrderStatus,
+  updateOrderItemStatus,
 };

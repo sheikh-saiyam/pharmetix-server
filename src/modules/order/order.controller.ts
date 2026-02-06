@@ -47,6 +47,13 @@ const getOrderById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {
+  res.status(501).json({
+    success: false,
+    message: "Not implemented",
+  });
+});
+
 const getCustomerOrders = asyncHandler(async (req: Request, res: Response) => {
   const { id: customerId } = req.user as IUser;
 
@@ -84,6 +91,51 @@ const createOrder = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const changeOrderStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { status } = req.body || {};
+
+  if (!status) {
+    throw new Error("Order status is required!");
+  }
+
+  const result = await orderServices.changeOrderStatus(
+    orderId as string,
+    status,
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Order status changed successfully!",
+    data: result,
+  });
+});
+
+const changeOrderItemStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { orderItemId } = req.params;
+    const { id: sellerId } = req.user as IUser;
+
+    const { status } = req.body || {};
+
+    if (!status) {
+      throw new Error("Order status is required!");
+    }
+
+    const result = await orderServices.changeOrderItemStatus(
+      sellerId,
+      orderItemId as string,
+      status,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Order item status changed successfully!",
+      data: result,
+    });
+  },
+);
+
 const cancelCustomerOrder = asyncHandler(
   async (req: Request, res: Response) => {
     const { id: customerId } = req.user as IUser;
@@ -105,7 +157,10 @@ const cancelCustomerOrder = asyncHandler(
 export const orderControllers = {
   getOrders,
   getOrderById,
+  getSellerOrders,
   getCustomerOrders,
   createOrder,
+  changeOrderStatus,
+  changeOrderItemStatus,
   cancelCustomerOrder,
 };
