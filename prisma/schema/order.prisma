@@ -7,7 +7,6 @@ enum OrderStatus {
 }
 
 enum OrderItemStatus {
-    PENDING
     PROCESSING
     SHIPPED
 }
@@ -36,7 +35,7 @@ model Order {
 
 model OrderItem {
     id         String          @id @default(uuid())
-    status     OrderItemStatus @default(PENDING)
+    status     OrderItemStatus @default(PROCESSING)
     quantity   Int
     unitPrice  Float
     subTotal   Float
