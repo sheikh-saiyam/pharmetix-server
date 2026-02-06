@@ -47,13 +47,6 @@ const getOrderById = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-const getSellerOrders = asyncHandler(async (req: Request, res: Response) => {
-  res.status(501).json({
-    success: false,
-    message: "Not implemented",
-  });
-});
-
 const getCustomerOrders = asyncHandler(async (req: Request, res: Response) => {
   const { id: customerId } = req.user as IUser;
 
@@ -112,7 +105,6 @@ const cancelCustomerOrder = asyncHandler(
 export const orderControllers = {
   getOrders,
   getOrderById,
-  getSellerOrders,
   getCustomerOrders,
   createOrder,
   cancelCustomerOrder,

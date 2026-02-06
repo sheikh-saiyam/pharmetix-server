@@ -6,6 +6,12 @@ enum OrderStatus {
     DELIVERED
 }
 
+enum OrderItemStatus {
+    PENDING
+    PROCESSING
+    SHIPPED
+}
+
 model Order {
     id                 String      @id @default(uuid())
     orderNumber        String      @unique @default(cuid())
@@ -29,17 +35,18 @@ model Order {
 }
 
 model OrderItem {
-    id         String   @id @default(uuid())
+    id         String          @id @default(uuid())
+    status     OrderItemStatus @default(PENDING)
     quantity   Int
     unitPrice  Float
     subTotal   Float
     // relations
     orderId    String
-    order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
     medicineId String
-    medicine   Medicine @relation(fields: [medicineId], references: [id])
+    medicine   Medicine        @relation(fields: [medicineId], references: [id])
     sellerId   String
-    seller     User     @relation(fields: [sellerId], references: [id])
+    seller     User            @relation(fields: [sellerId], references: [id])
 
     @@map("order_items")
 }

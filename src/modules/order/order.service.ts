@@ -73,7 +73,8 @@ const getOrderById = async (
           quantity: true,
           unitPrice: true,
           subTotal: true,
-          ...(customerRole === UserRole.ADMIN && {
+          ...((customerRole === UserRole.ADMIN ||
+            customerRole === UserRole.SELLER) && {
             seller: {
               select: { id: true, name: true, email: true, image: true },
             },
@@ -103,11 +104,15 @@ const getOrderById = async (
     },
   });
 
-  return result;
-};
+  if (!result) {
+    throw new Error(`Order with ID ${orderId} not found!`);
+  }
 
-const getSellerOrders = async (sellerId: string) => {
-  throw new Error("Not implemented");
+  if (customerId !== result.customerId) {
+    throw new Error("You are not authorized to view this order!");
+  }
+
+  return result;
 };
 
 const getCustomerOrders = async (
@@ -332,7 +337,6 @@ const cancelCustomerOrder = async (customerId: string, orderId: string) => {
 export const orderServices = {
   getOrders,
   getOrderById,
-  getSellerOrders,
   getCustomerOrders,
   createOrder,
   cancelCustomerOrder,

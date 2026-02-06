@@ -5,15 +5,13 @@ import { orderControllers } from "./order.controller";
 
 const router = express.Router();
 
-router.get("/all", requireAuth(UserRole.ADMIN), orderControllers.getOrders);
+router.get(
+  "/all",
+  requireAuth(UserRole.ADMIN, UserRole.SELLER),
+  orderControllers.getOrders,
+);
 
 router.get("/:orderId", requireAuth(), orderControllers.getOrderById);
-
-router.get(
-  "/seller",
-  requireAuth(UserRole.SELLER),
-  orderControllers.getSellerOrders,
-);
 
 router.get(
   "/customer",
