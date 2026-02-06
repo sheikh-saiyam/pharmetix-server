@@ -119,9 +119,8 @@ const changeOrderItemStatus = asyncHandler(
     const { status } = req.body || {};
 
     if (!status) {
-      throw new Error("Order status is required!");
+      throw new Error("Order item status is required!");
     }
-
     const result = await orderServices.changeOrderItemStatus(
       sellerId,
       orderItemId as string,

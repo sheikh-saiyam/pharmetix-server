@@ -286,23 +286,28 @@ const changeOrderStatus = async (
   orderId: string,
   updatedStatus: OrderStatus,
 ) => {
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: { id: true, status: true },
+  const result = await prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true },
+    });
+
+    if (!order) {
+      throw new Error(`Order with ID ${orderId} not found!`);
+    }
+
+    if (order.status === updatedStatus) {
+      throw new Error(`Order status is already ${updatedStatus}!`);
+    }
+
+    const result = await orderStatusServices.updateOrderStatus(
+      orderId,
+      updatedStatus,
+      tx,
+    );
+
+    return result;
   });
-
-  if (!order) {
-    throw new Error(`Order with ID ${orderId} not found!`);
-  }
-
-  if (order.status === updatedStatus) {
-    throw new Error(`Order status is already ${updatedStatus}!`);
-  }
-
-  const result = await orderStatusServices.updateOrderStatus(
-    orderId,
-    updatedStatus,
-  );
 
   return result;
 };
@@ -312,31 +317,32 @@ const changeOrderItemStatus = async (
   orderItemId: string,
   updatedStatus: OrderItemStatus,
 ) => {
-  const orderItem = await prisma.orderItem.findUnique({
-    where: { id: orderItemId },
-    select: { id: true, status: true, orderId: true, sellerId: true },
+  const result = await prisma.$transaction(async (tx) => {
+    const orderItem = await tx.orderItem.findUnique({
+      where: { id: orderItemId },
+      select: { id: true, sellerId: true, status: true },
+    });
+
+    if (!orderItem) {
+      throw new Error(`Order item with ID ${orderItemId} not found!`);
+    }
+
+    if (orderItem.sellerId !== sellerId) {
+      throw new Error("You are not authorized to update this order item!");
+    }
+
+    if (orderItem.status === updatedStatus) {
+      throw new Error(`Order item status is already ${updatedStatus}!`);
+    }
+
+    const updatedOrderItem = await orderStatusServices.updateOrderItemStatus(
+      orderItemId,
+      updatedStatus,
+      tx,
+    );
+
+    return updatedOrderItem;
   });
-
-  if (!orderItem) {
-    throw new Error(`Order item with ID ${orderItemId} not found!`);
-  }
-
-  if (orderItem.sellerId !== sellerId) {
-    throw new Error("You are not authorized to change this order item status!");
-  }
-
-  if (orderItem.status === OrderItemStatus.SHIPPED) {
-    throw new Error("Order item status is already SHIPPED!");
-  }
-
-  if (orderItem.status === updatedStatus) {
-    throw new Error(`Order item status is already ${updatedStatus}!`);
-  }
-
-  const result = await orderStatusServices.updateOrderItemStatus(
-    orderItem.id,
-    updatedStatus,
-  );
 
   return result;
 };

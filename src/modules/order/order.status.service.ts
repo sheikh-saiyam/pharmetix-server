@@ -17,19 +17,18 @@ const updateOrderStatus = async (
 };
 
 const updateOrderItemStatus = async (
-  orderId: string,
+  orderItemId: string,
   updatedStatus: OrderItemStatus,
   tx?: Prisma.TransactionClient,
 ) => {
   const result = await (tx ?? prisma).orderItem.update({
-    where: { id: orderId },
+    where: { id: orderItemId },
     data: { status: updatedStatus },
     select: { id: true, status: true },
   });
 
   return result;
 };
-
 export const orderStatusServices = {
   updateOrderStatus,
   updateOrderItemStatus,
