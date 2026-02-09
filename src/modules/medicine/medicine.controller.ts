@@ -161,10 +161,23 @@ const updateMedicine = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const deleteMedicine = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { id: sellerId } = req.user as IUser;
+
+  await medicineServices.deleteMedicine(id as string, sellerId);
+
+  res.status(200).json({
+    success: true,
+    message: "Medicine deleted successfully",
+  });
+});
+
 export const medicineControllers = {
   getMedicines,
   getSellerMedicines,
   getMedicineById,
   createMedicine,
   updateMedicine,
+  deleteMedicine,
 };

@@ -30,4 +30,11 @@ router.patch(
   medicineControllers.updateMedicine,
 );
 
+// Seller only
+router.delete(
+  "/:id",
+  requireAuth(UserRole.SELLER),
+  medicineControllers.deleteMedicine,
+);
+
 export const medicineRouter = router;

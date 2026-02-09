@@ -8,14 +8,15 @@ const getCategories = asyncHandler(async (req: Request, res: Response) => {
 
   const { skip, take, orderBy } = buildPaginationAndSort(req.query);
 
-  const booleanIsFeatured = isFeatured === "true" ? true : false;
+  const booleanIsFeatured =
+    isFeatured === "true" ? true : isFeatured === "false" ? false : undefined;
 
   const result = await categoryServices.getCategories({
     skip,
     take,
     orderBy,
     search: search as string | undefined,
-    isFeatured: booleanIsFeatured,
+    isFeatured: booleanIsFeatured as boolean,
   });
 
   res.status(200).json({

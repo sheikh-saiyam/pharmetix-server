@@ -23,7 +23,12 @@ const getMedicines = async (queries: IGetMedicinesQueries) => {
     include: {
       category: { select: { id: true, name: true, slug: true } },
     },
-    omit: { sellerId: true, categoryId: true },
+    omit: {
+      sellerId: true,
+      categoryId: true,
+      isDeleted: true,
+      deletedAt: true,
+    },
   });
 
   const total = await prisma.medicine.count({
@@ -63,7 +68,11 @@ const getSellerMedicines = async (
 
 const getMedicineById = async (identifier: string) => {
   const result = await prisma.medicine.findFirst({
-    where: { OR: [{ id: identifier }, { slug: identifier }] },
+    where: {
+      OR: [{ id: identifier }, { slug: identifier }],
+      isActive: true,
+      isDeleted: false,
+    },
     include: {
       seller: {
         select: { name: true, email: true },
@@ -171,10 +180,9 @@ const updateMedicine = async (
     throw new Error("Medicine not found!");
   }
 
-  // TODO: Ensure the medicine belongs to the seller
-  // if (medicine.sellerId !== sellerId) {
-  //   throw new Error("Unauthorized: You can only update your own medicines!");
-  // }
+  if (medicine.sellerId !== sellerId) {
+    throw new Error("Unauthorized: You can only update your own medicines!");
+  }
 
   // Apply stock change
   if (stockOperation !== undefined) {
@@ -247,7 +255,31 @@ const updateMedicine = async (
   return result;
 };
 
-// TODO: implement delete medicine service
+const deleteMedicine = async (id: string, sellerId: string) => {
+  await prisma.$transaction(async (tx) => {
+    const medicine = await tx.medicine.findUnique({
+      where: { id },
+      select: { id: true, sellerId: true },
+    });
+
+    if (!medicine) {
+      throw new Error("Medicine not found!");
+    }
+
+    if (medicine.sellerId !== sellerId) {
+      throw new Error("Unauthorized: You can only update your own medicines!");
+    }
+
+    await tx.medicine.update({
+      where: { id },
+      data: {
+        isActive: false,
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+  });
+};
 
 export const medicineServices = {
   getMedicines,
@@ -255,4 +287,5 @@ export const medicineServices = {
   getMedicineById,
   createMedicine,
   updateMedicine,
+  deleteMedicine,
 };

@@ -26,7 +26,7 @@ const getCategories = async (queries: IGetCategoriesQueries) => {
       },
       // attribute filters
       {
-        ...(isFeatured && { isFeatured }),
+        ...(isFeatured !== undefined && { isFeatured }),
       },
     ],
   };
@@ -94,17 +94,16 @@ const updateCategory = async (id: string, payload: CategoryUpdateInput) => {
 
 const deleteCategory = async (id: string) => {
   await prisma.$transaction(async (tx) => {
-    const medicines = await tx.category.findUnique({
+    const category = await tx.category.findUnique({
       where: { id },
       select: { id: true, _count: { select: { medicines: true } } },
     });
 
-    if (!medicines) {
+    if (!category) {
       throw new Error("Category not found!");
     }
 
-    const hasMedicines = medicines?._count.medicines > 0;
-
+    const hasMedicines = category._count.medicines > 0;
     if (hasMedicines) {
       throw new Error(
         "Can't delete category with associated medicines, delete or move them first!",

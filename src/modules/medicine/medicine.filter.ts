@@ -14,6 +14,7 @@ const buildMedicinesWhere = (payload: IGetMedicinesQueries) => {
 
   return {
     isActive: isActive ?? true,
+    isDeleted: false,
     AND: [
       // search filters
       {
