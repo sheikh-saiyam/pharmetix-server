@@ -5,6 +5,7 @@ type IPaginationAndSort = {
   sortOrder?: "asc" | "desc";
 };
 
+// TODO: LIMIT = 20
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 5;
 

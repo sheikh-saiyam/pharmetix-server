@@ -16,6 +16,8 @@ model Category {
     isFeatured  Boolean    @default(false)
     description String?
     isActive    Boolean    @default(true)
+    isDeleted   Boolean    @default(false)
+    deletedAt   DateTime?
     createdAt   DateTime   @default(now())
     updatedAt   DateTime   @updatedAt
     medicines   Medicine[]
@@ -24,37 +26,44 @@ model Category {
 }
 
 model Medicine {
-    id            String      @id @default(uuid())
-    // Identity
-    slug          String
-    brandName     String
-    genericName   String
-    manufacturer  String
+    id           String @id @default(uuid())
+    slug         String
+    brandName    String
+    genericName  String
+    manufacturer String
+
     // Medical info (STRUCTURED)
-    strength      String // "500mg"
-    dosageForm    DosageForm // TABLET | SYRUP | CAPSULE
-    unit          String // "tablet", "ml"
-    packSize      Int // 10 tablets, 100ml
-    dosageInfo    String? // "1 tablet every 8 hours"
+    strength   String
+    dosageForm DosageForm
+    unit       String
+    packSize   Int
+    dosageInfo String?
+
     // Pricing
-    price         Float // price per pack
-    piecePrice    Float? // price per tablet (optional)
+    price      Float // price per pack
+    piecePrice Float? // price per tablet (optional)
+
     // Inventory
     stockQuantity Int
     expiryDate    DateTime
-    isActive      Boolean     @default(true)
-    createdAt     DateTime    @default(now())
-    updatedAt     DateTime    @updatedAt
+
+    isActive  Boolean   @default(true)
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
     // Display
-    image         String
-    description   String
+    image       String
+    description String
+
     // relations
-    categoryId    String
-    category      Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-    sellerId      String
-    seller        User        @relation(fields: [sellerId], references: [id])
-    orderItems    OrderItem[]
-    reviews       Review[]
+    categoryId String
+    category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+    sellerId   String
+    seller     User        @relation(fields: [sellerId], references: [id])
+    orderItems OrderItem[]
+    reviews    Review[]
 
     @@unique([sellerId, slug])
     @@map("medicines")
