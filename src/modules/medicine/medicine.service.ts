@@ -70,8 +70,6 @@ const getMedicineById = async (identifier: string) => {
   const result = await prisma.medicine.findFirst({
     where: {
       OR: [{ id: identifier }, { slug: identifier }],
-      isActive: true,
-      isDeleted: false,
     },
     include: {
       seller: {
@@ -267,7 +265,7 @@ const deleteMedicine = async (id: string, sellerId: string) => {
     }
 
     if (medicine.sellerId !== sellerId) {
-      throw new Error("Unauthorized: You can only update your own medicines!");
+      throw new Error("Unauthorized: You can only delete your own medicines!");
     }
 
     await tx.medicine.update({
