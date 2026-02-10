@@ -51,4 +51,5 @@ export interface IGetMedicinesQueries {
   dosageForm: DosageForm | undefined;
   categoryId: string | undefined;
   isActive?: boolean;
+  isFeatured?: boolean;
 }

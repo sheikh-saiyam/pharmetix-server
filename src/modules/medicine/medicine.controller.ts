@@ -10,6 +10,7 @@ const getMedicines = asyncHandler(async (req: Request, res: Response) => {
   const {
     search,
     isActive,
+    isFeatured,
     manufacturer,
     categoryId,
     priceMin,
@@ -33,6 +34,10 @@ const getMedicines = asyncHandler(async (req: Request, res: Response) => {
       isActive === "false"
         ? false
         : isActive === "true" || (isActive === undefined && true),
+    isFeatured:
+      isFeatured === "false"
+        ? false
+        : isFeatured === "true" || (isFeatured === undefined && true),
   });
 
   res.status(200).json({
@@ -53,6 +58,7 @@ const getSellerMedicines = asyncHandler(async (req: Request, res: Response) => {
   const {
     search,
     isActive,
+    isFeatured,
     manufacturer,
     categoryId,
     priceMin,
@@ -79,6 +85,10 @@ const getSellerMedicines = asyncHandler(async (req: Request, res: Response) => {
         isActive === "false"
           ? false
           : isActive === "true" || (isActive === undefined && true),
+      isFeatured:
+        isFeatured === "false"
+          ? false
+          : isFeatured === "true" || (isFeatured === undefined && true),
     },
     sellerId,
   );

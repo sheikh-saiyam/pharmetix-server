@@ -5,6 +5,7 @@ const buildMedicinesWhere = (payload: IGetMedicinesQueries) => {
   const {
     search,
     isActive,
+    isFeatured,
     manufacturer,
     categoryId,
     priceMin,
@@ -36,6 +37,9 @@ const buildMedicinesWhere = (payload: IGetMedicinesQueries) => {
       },
       {
         ...(dosageForm && { dosageForm }),
+      },
+      {
+        ...(isFeatured !== undefined && { isFeatured }),
       },
       // price filters
       {

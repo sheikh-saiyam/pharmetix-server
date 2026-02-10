@@ -26,11 +26,12 @@ model Category {
 }
 
 model Medicine {
-    id           String @id @default(uuid())
+    id           String  @id @default(uuid())
     slug         String
     brandName    String
     genericName  String
     manufacturer String
+    isFeatured   Boolean @default(false)
 
     // Medical info (STRUCTURED)
     strength   String
