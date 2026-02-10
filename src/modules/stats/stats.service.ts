@@ -13,8 +13,8 @@ const getAdminStats = async () => {
       totalBannedUsers,
     ] = await Promise.all([
       await tx.user.count(),
-      await tx.user.count({ where: { role: "SELLER" } }),
       await tx.user.count({ where: { role: "ADMIN" } }),
+      await tx.user.count({ where: { role: "SELLER" } }),
       await tx.user.count({ where: { role: "CUSTOMER" } }),
       await tx.user.count({ where: { status: UserStatus.ACTIVE } }),
       await tx.user.count({
@@ -65,6 +65,7 @@ const getAdminStats = async () => {
       await tx.medicine.count({ where: { isActive: false } }),
       await tx.medicine.count({ where: { isDeleted: true } }),
       await tx.medicine.findMany({
+        take: 10,
         where: { stockQuantity: 0 },
         select: {
           id: true,
@@ -75,7 +76,8 @@ const getAdminStats = async () => {
         },
       }),
       await tx.medicine.findMany({
-        where: { stockQuantity: { lt: 50 } },
+        take: 10,
+        where: { stockQuantity: { gt: 0, lt: 50 } },
         select: {
           id: true,
           brandName: true,
@@ -93,6 +95,7 @@ const getAdminStats = async () => {
           genericName: true,
           price: true,
           piecePrice: true,
+          _count: { select: { orderItems: true } },
         },
       }),
       await tx.medicine.findMany({
@@ -178,6 +181,7 @@ const getAdminStats = async () => {
        COALESCE(SUM("totalAmount"), 0)::float AS revenue
      FROM "orders"
      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
+     AND "status" != 'CANCELLED'
      GROUP BY DATE("createdAt")
      ORDER BY date ASC;
     `) as { date: Date; ordersCount: number; revenue: number }[];
@@ -231,6 +235,130 @@ const getAdminStats = async () => {
   return result;
 };
 
+const getSellerStats = async (sellerId: string) => {
+  const result = await prisma.$transaction(async (tx) => {
+    const [
+      totalMedicines,
+      totalActiveMedicines,
+      totalInactiveMedicines,
+      totalDeletedMedicines,
+      outOfStockMedicines,
+      lowStockMedicines,
+      topSellingMedicines,
+      topRatedMedicines,
+    ] = await Promise.all([
+      await tx.medicine.count({ where: { sellerId } }),
+      await tx.medicine.count({ where: { sellerId, isActive: true } }),
+      await tx.medicine.count({ where: { sellerId, isActive: false } }),
+      await tx.medicine.count({ where: { sellerId, isDeleted: true } }),
+      await tx.medicine.findMany({
+        take: 10,
+        where: { sellerId, stockQuantity: 0 },
+        select: {
+          id: true,
+          brandName: true,
+          genericName: true,
+          price: true,
+          piecePrice: true,
+        },
+      }),
+      await tx.medicine.findMany({
+        take: 10,
+        where: { sellerId, stockQuantity: { gt: 0, lt: 50 } },
+        select: {
+          id: true,
+          brandName: true,
+          genericName: true,
+          price: true,
+          piecePrice: true,
+        },
+      }),
+      await tx.medicine.findMany({
+        take: 10,
+        where: { sellerId },
+        orderBy: { orderItems: { _count: "desc" } },
+        select: {
+          id: true,
+          brandName: true,
+          genericName: true,
+          price: true,
+          piecePrice: true,
+          _count: { select: { orderItems: true } },
+        },
+      }),
+      await tx.medicine.findMany({
+        take: 10,
+        where: { sellerId },
+        orderBy: { reviews: { _count: "desc" } },
+        select: {
+          id: true,
+          brandName: true,
+          genericName: true,
+          price: true,
+          piecePrice: true,
+        },
+      }),
+    ]);
+
+    // seller order_items stats
+    const [
+      totalOrderItems,
+      totalProcessingOrderItems,
+      totalShippedOrderItems,
+      totalRevenue,
+    ] = await Promise.all([
+      await tx.orderItem.count({ where: { sellerId } }),
+      await tx.orderItem.count({
+        where: { sellerId, status: "PROCESSING" },
+      }),
+      await tx.orderItem.count({
+        where: { sellerId, status: "SHIPPED" },
+      }),
+      await tx.orderItem.aggregate({
+        _sum: { subTotal: true },
+        where: { sellerId },
+      }),
+    ]);
+
+    const orderItemsPerDay = (await tx.$queryRaw`
+     SELECT
+       DATE(o."createdAt") AS date,
+       COUNT(oi."id")::int AS "ordersCount",
+       COALESCE(SUM(oi."subTotal"), 0)::float AS revenue
+     FROM "order_items" oi
+     JOIN "orders" o ON o."id" = oi."orderId"
+     WHERE o."createdAt" >= NOW() - INTERVAL '30 days'
+       AND oi."sellerId" = ${sellerId}
+       AND o."status" != 'CANCELLED'
+     GROUP BY DATE(o."createdAt")
+     ORDER BY date ASC;
+    `) as { date: Date; ordersCount: number; revenue: number }[];
+
+    return {
+      medicineStats: {
+        totalMedicines,
+        totalActiveMedicines,
+        totalInactiveMedicines,
+        totalDeletedMedicines,
+        outOfStockMedicines,
+        lowStockMedicines,
+        topSellingMedicines,
+        topRatedMedicines,
+      },
+      orderItemsStats: {
+        totalOrderItems,
+        totalProcessingOrderItems,
+        totalShippedOrderItems,
+        totalRevenue: totalRevenue._sum.subTotal,
+      },
+      orderItemsPerDay,
+    };
+  });
+
+  return result;
+};
+
 export const statsServices = {
   getAdminStats,
+  getSellerStats,
 };

@@ -11,4 +11,10 @@ router.get(
   statsControllers.getAdminStats,
 );
 
+router.get(
+  "/seller",
+  requireAuth(UserRole.SELLER),
+  statsControllers.getSellerStats,
+);
+
 export const statsRouter = router;
