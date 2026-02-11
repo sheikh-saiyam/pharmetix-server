@@ -50,7 +50,7 @@ const updateUserStatus = async (userId: string, status: UserStatus) => {
   }
 
   const result = await prisma.$transaction(async (tx) => {
-    const user = await prisma.user.findUnique({
+    const user = await tx.user.findUnique({
       where: { id: userId },
       select: { id: true, status: true },
     });
@@ -63,7 +63,7 @@ const updateUserStatus = async (userId: string, status: UserStatus) => {
       throw new Error("User already has this status!");
     }
 
-    return await prisma.user.update({
+    return await tx.user.update({
       where: { id: userId },
       data: { status },
     });
