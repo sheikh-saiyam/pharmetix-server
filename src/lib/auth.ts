@@ -32,14 +32,6 @@ export const auth = betterAuth({
     autoSignIn: true,
   },
 
-  socialProviders: {
-    github: {
-      clientId: "your-client-id",
-      clientSecret: "your-client-secret",
-      // redirectURI: "https://example.com/api/auth/callback/github",
-    },
-  },
-
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-up/email") {

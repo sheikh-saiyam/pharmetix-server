@@ -5,9 +5,8 @@ type IPaginationAndSort = {
   sortOrder?: "asc" | "desc";
 };
 
-// TODO: LIMIT = 20
 const DEFAULT_PAGE = 1;
-const DEFAULT_LIMIT = 5;
+const DEFAULT_LIMIT = 20;
 
 const buildPaginationAndSort = (options: IPaginationAndSort) => {
   const page = Math.max(1, Number(options.page) || DEFAULT_PAGE);

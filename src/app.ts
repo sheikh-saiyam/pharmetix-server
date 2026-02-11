@@ -9,6 +9,7 @@ import { medicineRouter } from "./modules/medicine/medicine.route";
 import { orderRouter } from "./modules/order/order.route";
 import { reviewRouter } from "./modules/review/review.route";
 import { statsRouter } from "./modules/stats/stats.route";
+import { userRouter } from "./modules/user/user.route";
 
 const app: Express = express();
 
@@ -23,6 +24,7 @@ app.use(
 );
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
+app.use("/api/v1/users", userRouter);
 
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/medicines", medicineRouter);
