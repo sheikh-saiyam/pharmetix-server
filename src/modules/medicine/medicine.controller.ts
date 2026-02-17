@@ -37,7 +37,8 @@ const getMedicines = asyncHandler(async (req: Request, res: Response) => {
     isFeatured:
       isFeatured === "false"
         ? false
-        : isFeatured === "true" || (isFeatured === undefined && true),
+        : isFeatured === "true" ||
+          ((isFeatured === undefined && undefined) as boolean),
   });
 
   res.status(200).json({
@@ -88,7 +89,8 @@ const getSellerMedicines = asyncHandler(async (req: Request, res: Response) => {
       isFeatured:
         isFeatured === "false"
           ? false
-          : isFeatured === "true" || (isFeatured === undefined && true),
+          : isFeatured === "true" ||
+            ((isFeatured === undefined && undefined) as boolean),
     },
     sellerId,
   );

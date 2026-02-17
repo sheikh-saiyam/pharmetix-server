@@ -193,6 +193,7 @@ const getSellerOrders = async (
       order: {
         select: {
           id: true,
+          orderNumber: true,
           status: true,
           createdAt: true,
           shippingName: true,
