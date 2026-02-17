@@ -5,11 +5,7 @@ import { orderControllers } from "./order.controller";
 
 const router = express.Router();
 
-router.get(
-  "/all",
-  requireAuth(UserRole.ADMIN, UserRole.SELLER),
-  orderControllers.getOrders,
-);
+router.get("/all", requireAuth(UserRole.ADMIN), orderControllers.getOrders);
 
 router.get(
   "/seller",

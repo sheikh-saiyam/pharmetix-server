@@ -14,7 +14,9 @@ const getOrders = asyncHandler(async (req: Request, res: Response) => {
     skip,
     take,
     orderBy,
-    status: status as OrderStatus | undefined,
+    status: status?.length
+      ? ((status as string).split(",") as OrderStatus[] | undefined)
+      : undefined,
   });
 
   res.status(200).json({

@@ -22,9 +22,11 @@ import {
 const getOrders = async (payload: IGetAllOrdersQueries) => {
   const { skip, take, orderBy, status } = payload;
 
-  const whereFilters = {
-    ...(status && { status }),
-  } as OrderWhereInput;
+  const whereFilters: OrderWhereInput = {
+    ...(status && {
+      OR: [{ status: { in: status } }],
+    }),
+  };
 
   const result = await prisma.order.findMany({
     where: whereFilters,

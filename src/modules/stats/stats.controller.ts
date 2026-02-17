@@ -6,7 +6,6 @@ import { IUser } from "../../types/express";
 const getAdminStats = asyncHandler(async (req: Request, res: Response) => {
   const result = await statsServices.getAdminStats();
 
-  console.dirxml({ result });
   res.status(200).json({
     success: true,
     message: "Admin statistics retrieved successfully",

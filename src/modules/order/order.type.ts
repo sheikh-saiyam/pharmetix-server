@@ -19,7 +19,7 @@ export interface IGetAllOrdersQueries {
   skip: number;
   take: number;
   orderBy: { [key: string]: "asc" | "desc" } | undefined;
-  status: OrderStatus | undefined;
+  status: OrderStatus[] | undefined;
 }
 export interface IGetSellerOrdersQueries {
   skip: number;
