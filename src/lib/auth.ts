@@ -7,8 +7,8 @@ import { prisma } from "./prisma";
 
 export const auth = betterAuth({
   appName: "Pharmetix",
-  trustedOrigins: [env.APP_ORIGIN, env.PROD_APP_ORIGIN],
 
+  trustedOrigins: [env.APP_ORIGIN, env.PROD_APP_ORIGIN],
   session: {
     cookieCache: {
       enabled: true,
