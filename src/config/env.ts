@@ -8,6 +8,7 @@ const envSchema = z.object({
   PORT: z.string().transform(Number),
 
   APP_ORIGIN: z.string().url(),
+  PROD_APP_ORIGIN: z.string().url(),
 
   DATABASE_URL: z.string().url(),
 
