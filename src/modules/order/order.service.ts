@@ -68,16 +68,20 @@ const getOrderById = async (
   customerId: string,
   customerRole: UserRole,
 ) => {
-  const order = await prisma.order.findUnique({
+  // 1. Initial authorization check
+  const orderCheck = await prisma.order.findUnique({
     where: { id: orderId },
     select: { id: true, customerId: true },
   });
 
-  if (!order) {
+  if (!orderCheck) {
     throw new Error(`Order with ID ${orderId} not found!`);
   }
 
-  if (customerRole === UserRole.CUSTOMER && order.customerId !== customerId) {
+  if (
+    customerRole === UserRole.CUSTOMER &&
+    orderCheck.customerId !== customerId
+  ) {
     throw new Error("You are not authorized to view this order!");
   }
 
@@ -103,10 +107,18 @@ const getOrderById = async (
           medicine: {
             select: {
               id: true,
+              slug: true,
               sellerId: true,
               genericName: true,
               brandName: true,
               price: true,
+
+              reviews: {
+                where: {
+                  orderId: orderId, // Only reviews for THIS order
+                  customerId: orderCheck.customerId,
+                },
+              },
             },
           },
         },
@@ -125,7 +137,26 @@ const getOrderById = async (
     },
   });
 
-  return result;
+  // 3. Proper formatting for the frontend
+  const formattedOrderItems = result!.orderItems.map((item) => {
+    // Check if a review exists in the array
+    const review = item.medicine.reviews?.[0] || null;
+
+    // Remove the raw reviews array from the medicine object
+    const { reviews, ...medicineInfo } = item.medicine;
+
+    return {
+      ...item,
+      medicine: medicineInfo,
+      isReviewed: !!review,
+      reviewId: review?.id || null,
+    };
+  });
+
+  return {
+    ...result,
+    orderItems: formattedOrderItems,
+  };
 };
 
 const getCustomerOrders = async (
@@ -209,7 +240,13 @@ const getSellerOrders = async (
     skip: skip,
     take: take,
     // sorting
-    ...(orderBy && { orderBy }),
+    ...(orderBy && {
+      orderBy: {
+        order: {
+          createdAt: orderBy?.sortOrder || "desc",
+        },
+      },
+    }),
   });
 
   if (sellerId !== result[0]?.sellerId) {
